@@ -1,0 +1,126 @@
+Sub LoopThroughStocks()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim tickerSymbol As String
+    Dim stockQuantity As Double
+    Dim totalStockVolume As Double
+    Dim outputRow As Long
+    Dim i As Long
+    Dim j As Integer
+    Dim greatestIncrease As Double
+    Dim greatestDecrease As Double
+    Dim greatestVolume As Double
+    Dim greatestIncreaseTicker As String
+    Dim greatestDecreaseTicker As String
+    Dim greatestVolumeTicker As String
+    Dim summaryColumn As Integer
+    
+    ' Initialize outputRow outside the loop
+    outputRow = 2
+    greatestIncrease = 0
+    greatestDecrease = 0
+    greatestVolume = 0
+    
+    ' Loop through all worksheets
+    For Each ws In ThisWorkbook.Worksheets
+        
+        ' Find the last row in column A
+        totalStockVolume = 0
+        j = 0
+        lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+        
+        ' Output the totalStockVolume and tickerSymbol for the current worksheet
+        ws.Range("I1").Value = "TickerSymbol"
+        ws.Range("J1").Value = "YearlyChange"
+        ws.Range("K1").Value = "PercentChange"
+        ws.Range("L1").Value = "TotalStockVolume"
+        
+        ' Initialize totalStockVolume for each worksheet
+        
+        ' Loop through each row
+        For i = 2 To lastRow
+        
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+                ' Get the tickerSymbol from column A
+                ws.Range("I" & 2 + j).Value = ws.Cells(i, 1).Value
+                
+                ' Get TotalStockVolume
+                totalStockVolume = totalStockVolume + ws.Cells(i, 7).Value
+                ws.Range("L" & 2 + j).Value = totalStockVolume
+                
+                ' Get yearly change
+                ws.Range("J" & 2 + j).Value = ws.Cells(i, 6).Value - ws.Cells(i, 3).Value
+                
+                ' Get percentage change
+                ws.Range("K" & 2 + j).Value = Format(((ws.Cells(i, 6).Value - ws.Cells(i, 3).Value) / ws.Cells(i, 3).Value), "0.00%")
+                
+                ' Apply conditional formatting to column 10 (YearlyChange). Red for negative and green for positive
+                If ws.Range("J" & 2 + j).Value < 0 Then
+                    ws.Cells(2 + j, 10).Interior.ColorIndex = 3 ' Red color
+                
+                ElseIf ws.Range("J" & 2 + j).Value > 0 Then
+                    ws.Cells(2 + j, 10).Interior.ColorIndex = 4 ' Green color
+    
+                Else
+                    ws.Cells(2 + j, 10).Interior.ColorIndex = xlNone ' No color (default)
+                
+                End If
+                
+                ' Check for greatest increase, decrease, and volume
+                If ws.Range("K" & 2 + j).Value > greatestIncrease Then
+                    greatestIncrease = ws.Range("K" & 2 + j).Value
+                    greatestIncreaseTicker = ws.Range("I" & 2 + j).Value
+                End If
+                
+                If ws.Range("K" & 2 + j).Value < greatestDecrease Then
+                    greatestDecrease = ws.Range("K" & 2 + j).Value
+                    greatestDecreaseTicker = ws.Range("I" & 2 + j).Value
+                End If
+                
+                If ws.Range("L" & 2 + j).Value > greatestVolume Then
+                    greatestVolume = ws.Range("L" & 2 + j).Value
+                    greatestVolumeTicker = ws.Range("I" & 2 + j).Value
+                End If
+                
+                totalStockVolume = 0
+                j = j + 1
+            Else
+                totalStockVolume = totalStockVolume + ws.Cells(i, 7).Value
+            End If
+        
+        Next i
+        
+        ' Output greatest percentage increase, decrease, and volume in the same worksheet starting from Column P
+        
+        ws.Cells(2, 16).Value = "Greatest % Increase"
+        ws.Cells(3, 16).Value = "Greatest % Decrease"
+        ws.Cells(4, 16).Value = "Greatest Total Volume"
+        ws.Cells(1, 17).Value = "Ticker"
+        ws.Cells(1, 18).Value = "Value"
+        
+        
+        ws.Cells(2, 17).Value = greatestIncreaseTicker
+        ws.Cells(2, 18).Value = greatestIncrease
+        
+        ws.Cells(3, 17).Value = greatestDecreaseTicker
+        ws.Cells(3, 18).Value = greatestDecrease
+        
+        ws.Cells(4, 17).Value = greatestVolumeTicker
+        ws.Cells(4, 18).Value = greatestVolume
+    
+    
+    ' Autofit specific columns in the current worksheet
+        With ws
+            .Columns("L").AutoFit ' Autofit column L
+            .Columns("P").AutoFit ' Autofit column P
+            .Columns("R").AutoFit ' Autofit column R
+        
+        End With
+        
+        Next ws
+    
+    
+End Sub
+
+
